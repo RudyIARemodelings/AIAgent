@@ -40,8 +40,12 @@ def lead_search(
     # Construcción del payload dinámico
     payload = {"auth_token": auth_token, "limit": limit, "offset": offset}
     for key, values in filters.items():
-        payload[key] = ",".join(values) if isinstance(values, list) else str(values)
-
+        if isinstance(values, list):
+            payload[key] = ",".join(
+                str(v) for v in values
+            )  # convierte todos los elementos a str
+        else:
+            payload[key] = str(values)
     # print("🔍 Payload enviado:", payload)
 
     # Llamada a la API
