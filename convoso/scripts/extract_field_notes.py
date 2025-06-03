@@ -14,7 +14,7 @@ def extract_fields(note):
         "PROJECT:": "project",
         "AGENT:": "agent",
         "CONFIRMED BY:": "confirmed_by",
-        "LEAD ID:": "lead_id",
+        "LEAD ID:": "lead_id_notes",
         "LEAD SOURCE:": "lead_source",
         "NOTES:": "note_text",  # especial
     }

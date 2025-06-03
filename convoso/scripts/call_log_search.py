@@ -3,10 +3,14 @@ import pandas as pd
 import requests
 from datetime import datetime, timedelta
 
-from config import Config
 from ..convoso_endpoints import ConvosoEndpoints
-from .extract_field_notes import extract_fields
 from ..fixtures import CALL_LOG_BASIC_COLUMNS
+
+
+def extract_recording_url(recording_list):
+    if isinstance(recording_list, list) and recording_list:
+        return recording_list[0].get("public_url")
+    return None
 
 
 def call_log_search(
@@ -24,28 +28,41 @@ def call_log_search(
     **filters,
 ):
     """
-    Busca call logs desde la API de Convoso con parámetros dinámicos.
+    Retrieve call logs from the Convoso API with dynamic filtering and optional recording extraction.
 
-    Parámetros:
-        auth_token (str): Token de autenticación.
-        columns_required (list): Lista personalizada de columnas a mantener.
-        use_default_columns (bool): Si True, usa LEADS_BASIC_COLUMNS como filtro.
-        limit (int): Cuántos elementos obtener.
-        offset (int): Cuántos elementos omitir.
-        timeout (int): Tiempo de espera de la llamada.
-        include_recordings (int): Si incluir grabaciones (1 = sí).
-        days_back_start (int): Cuántos días atrás empezar la búsqueda.
-        days_back_end (int): Cuántos días atrás terminar la búsqueda.
-        **filters: Otros filtros dinámicos (status, campaign_id, etc).
+    Parameters:
+        auth_token (str): Convoso authentication token.
+        columns_required (list, optional): List of specific column names to keep in the final DataFrame.
+        use_default_columns (bool): If True, filters the DataFrame to include only CALL_LOG_BASIC_COLUMNS.
+        limit (int): Maximum number of records to retrieve per request.
+        offset (int): Number of records to skip (for pagination).
+        timeout (int): Maximum wait time in seconds for the API response.
+        include_recordings (int): If 1, includes 'recording_link' extracted from JSON in results.
+        days_back_start (int): Number of days before today to start the search window (e.g., 3 = 3 days ago).
+        days_back_end (int): Number of days before today to end the search window (e.g., 1 = yesterday).
+        start_time (str, optional): Override for search start datetime (format: "YYYY-MM-DD HH:MM:SS").
+        end_time (str, optional): Override for search end datetime (format: "YYYY-MM-DD HH:MM:SS").
+        **filters (dict): Additional Convoso API filters (e.g., status, campaign_id, etc.).
 
-    Retorna:
-        pd.DataFrame con los call logs encontrados.
+    Returns:
+        pd.DataFrame: A DataFrame containing call log results, optionally filtered and enriched.
+
+    Example:
+        from scripts import call_log_search
+        df = call_log_search(
+            auth_token=Config.CONVOSO_TOKEN,
+            days_back_start=4,
+            days_back_end=1,
+            limit=20,
+            status="MTS"
+        )
     """
+
     if not auth_token:
         print("⚠️ No existe un auth token.")
         return pd.DataFrame()
 
-    url = ConvosoEndpoints.CALL_LOGS_ENDPOINT
+    url = ConvosoEndpoints.CALL_LOGS_SEARCH_ENDPOINT
 
     if not start_time:
         start_date = (datetime.today() - timedelta(days=days_back_start)).strftime(
@@ -87,9 +104,24 @@ def call_log_search(
 
     df = pd.DataFrame(call_logs)
 
+    if include_recordings == 1:
+        if "recording" in df.columns:
+            df["recording_link"] = df["recording"].apply(
+                lambda r: (
+                    extract_recording_url(json.loads(r))
+                    if isinstance(r, str)
+                    else extract_recording_url(r)
+                )
+            )
+
     # Filtrar columnas si se requiere
     if use_default_columns:
         final_columns = columns_required if columns_required else CALL_LOG_BASIC_COLUMNS
+        print("FINAL COLUMNS___", final_columns)
+
+        if include_recordings == 1:
+            final_columns.append("recording_link")
+
         df = df[[col for col in final_columns if col in df.columns]]
 
     return df
