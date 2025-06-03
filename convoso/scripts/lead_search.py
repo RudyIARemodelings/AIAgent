@@ -3,12 +3,13 @@ import pandas as pd
 import requests
 
 from config import Config
-from convoso.convoso_endpoints import ConvosoEndpoints
-from convoso.scripts.extract_field_notes import extract_fields
-from convoso.fixtures import LEADS_BASIC_COLUMNS, LEAD_FIELD_MAPPING
+from ..convoso_endpoints import ConvosoEndpoints
+from .extract_field_notes import extract_fields
+from ..fixtures import LEADS_BASIC_COLUMNS, LEAD_FIELD_MAPPING
 
 
 def lead_search(
+    auth_token="",
     columns_required=None,
     use_default_columns=True,
     limit=10,
@@ -30,8 +31,11 @@ def lead_search(
     Retorna:
         pd.DataFrame con los leads encontrados.
     """
+    if not auth_token:
+        print("⚠️ No existe un auth token.")
+        return pd.DataFrame()
+
     url = ConvosoEndpoints.LEADS_SEARCH_ENDPOINT
-    auth_token = Config.CONVOSO_TOKEN
 
     # Construcción del payload dinámico
     payload = {"auth_token": auth_token, "limit": limit, "offset": offset}
