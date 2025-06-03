@@ -87,11 +87,14 @@ def call_log_search(
     }
 
     for key, values in filters.items():
-        payload[key] = (
-            ",".join(str(v) for v in values)
-            if isinstance(values, list)
-            else str(values)
-        )
+        if isinstance(values, list):
+            payload[key] = ",".join(
+                str(v) for v in values
+            )  # convierte todos los elementos a str
+        else:
+            payload[key] = str(values)
+
+    # print("PAYLOADD___", payload)
 
     # Llamada a la API
     response = requests.post(url, data=payload, timeout=timeout)
@@ -105,6 +108,7 @@ def call_log_search(
     df = pd.DataFrame(call_logs)
 
     if include_recordings == 1:
+        print(df.columns)
         if "recording" in df.columns:
             df["recording_link"] = df["recording"].apply(
                 lambda r: (
@@ -117,9 +121,8 @@ def call_log_search(
     # Filtrar columnas si se requiere
     if use_default_columns:
         final_columns = columns_required if columns_required else CALL_LOG_BASIC_COLUMNS
-        print("FINAL COLUMNS___", final_columns)
 
-        if include_recordings == 1:
+        if include_recordings == 1 and "recording_link" not in final_columns:
             final_columns.append("recording_link")
 
         df = df[[col for col in final_columns if col in df.columns]]

@@ -91,14 +91,6 @@ def lead_search(
     # Filtrar columnas si es necesario
     if use_default_columns:
         final_columns = columns_required if columns_required else LEADS_BASIC_COLUMNS
-        print("FINAL COLUMNS__", final_columns)
-        print("DF COLUMNS__", list(df.columns))
-        columns_list = list(df.columns)
-        with open("columns_snapshot.json", "w", encoding="utf-8") as f:
-            json.dump(columns_list, f, ensure_ascii=False, indent=2)
-
-        print("✅ Columnas guardadas en 'columns_snapshot.json'")
-
         df = df[[col for col in final_columns if col in df.columns]]
 
     return df
