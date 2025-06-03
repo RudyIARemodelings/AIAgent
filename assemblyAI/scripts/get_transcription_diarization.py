@@ -50,3 +50,5 @@ def get_transcription_diarization(auth_token="", audio_file=""):
 
     for utterance in transcription_result["utterances"]:
         print(f"Speaker {utterance['speaker']}: {utterance['text']}")
+
+    return transcription_result
