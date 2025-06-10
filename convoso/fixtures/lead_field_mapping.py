@@ -8,6 +8,6 @@ LEAD_FIELD_MAPPING = {
     "CRM_notes": "field_17",
     "field_18": "field_18",
     "field_41": "field_41",
-    "appointmen_date_and_time": "field_81",
+    "appointment_date_and_time": "field_81",
     "notes": "field_101",
 }
