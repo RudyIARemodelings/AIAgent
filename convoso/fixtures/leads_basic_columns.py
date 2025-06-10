@@ -5,7 +5,7 @@ LEADS_BASIC_COLUMNS = [
     "services",
     "project",
     "reason",
-    "appointmen_date_and_time",
+    "appointment_date_and_time",
     "area",
     "first_name",
     "last_name",

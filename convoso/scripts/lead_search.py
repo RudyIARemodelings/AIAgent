@@ -89,8 +89,12 @@ def lead_search(
         df = pd.concat([df, df_notes], axis=1)
 
     # Filtrar columnas si es necesario
+
     if use_default_columns:
         final_columns = columns_required if columns_required else LEADS_BASIC_COLUMNS
         df = df[[col for col in final_columns if col in df.columns]]
 
+    else:
+        final_columns = columns_required if columns_required else df.columns
+        df = df[[col for col in final_columns if col in df.columns]]
     return df
